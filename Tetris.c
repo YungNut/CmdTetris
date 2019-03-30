@@ -24,6 +24,7 @@ int getScreenIndex(int x, int y);
 int rotate(int x, int y, int a);
 int spaceAvaliable(int tetronimo, int px, int py, int a);
 int getKey();
+void arrayMove(char array[], int oldindex, int newindex);
 
 int main() {
     int gameWidth = 10;
@@ -126,9 +127,30 @@ int main() {
 
         }
 
+        for(int y = 0; y < 20; y++) {
+            char row[11];
+            for(int x = 0; x < 10; x++) {
+                row[x] = blocks[y*10+x];
+            }
+
+            if(strcmp(row, "XXXXXXXXXX") == 0) {
+                for(int x = 0; x < 10; x++) {
+                   blocks[y*10+x] = ' ';
+                }
+
+                for(int n = 0; n < 10; n++) {
+                    char temp = blocks[((y+1)*10)-1];
+                    for(int i = ((y+1)*10)-1;i>0;i--) {
+                        blocks[i] = blocks[i-1];
+                    }
+                    blocks[0] = temp;
+                }
+            }
+        }
+
         // -- Render --
 
-        // Game Borders
+        // Game Walls
         for(int x = gamex; x < 13; x++) {
             for(int y = gamey; y < 23; y++) {
                 if(x == 1 || y == 1 || x == 12 || y == 22) {
