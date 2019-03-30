@@ -18,6 +18,8 @@ char screenBuffer[1921];
 char blocks[201];
 int lastkey = 0;
 
+int score = 0;
+
 char tetrominos[7][17];
 
 int getScreenIndex(int x, int y);
@@ -98,8 +100,15 @@ int main() {
                 }
 
                 currentTetromino = rand() % 7;
-                currenty = 0;
+
+                if(spaceAvaliable(currentTetromino, 4, 1, 0)) {
+                currenty = 1;
                 currentx = 4;
+                currentRotation = 0;
+                } else {
+                    printf("\a");
+                    gameOver=1;
+                }
             }
         }
 
@@ -134,6 +143,8 @@ int main() {
             }
 
             if(strcmp(row, "XXXXXXXXXX") == 0) {
+                score += 100;
+
                 for(int x = 0; x < 10; x++) {
                    blocks[y*10+x] = ' ';
                 }
@@ -183,8 +194,30 @@ int main() {
             }
         }
 
+        // Draw Score
+        char scoreString[20];
+        sprintf(scoreString, "Score: %d", score);
+
+        for(int i = 15; i < strlen(scoreString)+15; i++) {
+            screenBuffer[getScreenIndex(i, 2)] = scoreString[i-15];
+        }
+
+
         printf("%s\n", screenBuffer);
     }
+
+    endwin();
+
+    printf("\e[1;1H\e[2J");  // clear screen
+
+    char gameOverText[100];
+    strcat(gameOverText, "\n\n\n\n\n\n\n\n\n\n");
+    strcat(gameOverText, "                                   ");
+    strcat(gameOverText, "Game Over!");
+    strcat(gameOverText, "\n\n\n\n\n\n\n\n\n\n");
+
+    printf("%s", gameOverText);
+
 
     return 0;
 }
