@@ -1,10 +1,9 @@
 
 #include <ctype.h>
+#include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <curses.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -39,18 +38,17 @@ int main() {
 
     int frameCount;
 
-    for(int i = 0; i < windowWidth*windowHeight; i++) {
+    for (int i = 0; i < windowWidth * windowHeight; i++) {
         strcat(screenBuffer, " ");
     }
 
-    for(int i = 0; i < 200; i++) {
+    for (int i = 0; i < 200; i++) {
         strcat(blocks, " ");
     }
 
     // Set random seed
-     srand(time(NULL)); 
-     currentTetromino = rand() % 7;
-
+    srand(time(NULL));
+    currentTetromino = rand() % 7;
 
     // Fill an array with all seven tetrominos
     strcpy(tetrominos[0], "  O   O   O   O ");
@@ -61,9 +59,8 @@ int main() {
     strcpy(tetrominos[5], " O   OO  O      ");
     strcpy(tetrominos[6], "    OO   OO     ");
 
-
-    printf("\033[8;24;80t"); // Resize screen
-    printf("\e[1;1H\e[2J");  // clear screen
+    printf("\033[8;24;80t");  // Resize screen
+    printf("\e[1;1H\e[2J");   // clear screen
     clear();
 
     WINDOW *w = initscr();
@@ -80,79 +77,84 @@ int main() {
         frameCount++;
         printf("\e[1;1H\e[2J");
 
-
         // -- Game Logic --
-        if(frameCount % 25 == 0 || lastkey == 2) {
-            if(spaceAvaliable(currentTetromino, currentx, currenty+1, currentRotation)) {
+        if (frameCount % 25 == 0 || lastkey == 2) {
+            if (spaceAvaliable(currentTetromino, currentx, currenty + 1,
+                               currentRotation)) {
                 lastkey = 0;
                 currenty++;
                 frameCount = 0;
             } else {
-                // Turn piece into X's, and make another random piece at the top, also, check if a line was made
-                for(int x = 0; x < 4; x++) {
-                 for(int y = 0; y < 4;  y++) {
-                        char c = tetrominos[currentTetromino][rotate(x, y, currentRotation)];
-                
-                        if(c == 'O') {
-                            blocks[(currenty+y-1)*10+(currentx+x-1)] = 'X';
+                // Turn piece into X's, and make another random piece at the
+                // top, also, check if a line was made
+                for (int x = 0; x < 4; x++) {
+                    for (int y = 0; y < 4; y++) {
+                        char c = tetrominos[currentTetromino]
+                                           [rotate(x, y, currentRotation)];
+
+                        if (c == 'O') {
+                            blocks[(currenty + y - 1) * 10 +
+                                   (currentx + x - 1)] = 'X';
                         }
                     }
                 }
 
                 currentTetromino = rand() % 7;
 
-                if(spaceAvaliable(currentTetromino, 4, 1, 0)) {
-                currenty = 1;
-                currentx = 4;
-                currentRotation = 0;
+                if (spaceAvaliable(currentTetromino, 4, 1, 0)) {
+                    currenty = 1;
+                    currentx = 4;
+                    currentRotation = 0;
                 } else {
                     printf("\a");
-                    gameOver=1;
+                    gameOver = 1;
                 }
             }
         }
 
-        if(getKey() != 0) {
-            if(lastkey == 4) {
-                if(spaceAvaliable(currentTetromino, currentx-1, currenty, currentRotation)) {
+        if (getKey() != 0) {
+            if (lastkey == 4) {
+                if (spaceAvaliable(currentTetromino, currentx - 1, currenty,
+                                   currentRotation)) {
                     lastkey = 0;
                     currentx--;
                 }
-            } 
+            }
 
-            if(lastkey == 3) {
-                if(spaceAvaliable(currentTetromino, currentx+1, currenty, currentRotation)) {
+            if (lastkey == 3) {
+                if (spaceAvaliable(currentTetromino, currentx + 1, currenty,
+                                   currentRotation)) {
                     lastkey = 0;
                     currentx++;
                 }
             }
 
-            if(lastkey == 1) {
-                if(spaceAvaliable(currentTetromino, currentx, currenty, currentRotation+1)) {
+            if (lastkey == 1) {
+                if (spaceAvaliable(currentTetromino, currentx, currenty,
+                                   currentRotation + 1)) {
                     lastkey = 0;
                     currentRotation++;
                 }
             }
-
         }
 
-        for(int y = 0; y < 20; y++) {
+        for (int y = 0; y < 20; y++) {
             char row[11];
-            for(int x = 0; x < 10; x++) {
-                row[x] = blocks[y*10+x];
+            for (int x = 0; x < 10; x++) {
+                row[x] = blocks[y * 10 + x];
             }
 
-            if(strcmp(row, "XXXXXXXXXX") == 0) {
+            if (strcmp(row, "XXXXXXXXXX") == 0) {
                 score += 100;
 
-                for(int x = 0; x < 10; x++) {
-                   blocks[y*10+x] = ' ';
+                for (int x = 0; x < 10; x++) {
+                    blocks[y * 10 + x] = ' ';
                 }
 
-                for(int n = 0; n < 10; n++) {
-                    char temp = blocks[((y+1)*10)-1];
-                    for(int i = ((y+1)*10)-1;i>0;i--) {
-                        blocks[i] = blocks[i-1];
+                for (int n = 0; n < 10; n++) {
+                    char temp = blocks[((y + 1) * 10) - 1];
+                    for (int i = ((y + 1) * 10) - 1; i > 0; i--) {
+                        blocks[i] = blocks[i - 1];
                     }
                     blocks[0] = temp;
                 }
@@ -162,34 +164,36 @@ int main() {
         // -- Render --
 
         // Game Walls
-        for(int x = gamex; x < 13; x++) {
-            for(int y = gamey; y < 23; y++) {
-                if(x == 1 || y == 1 || x == 12 || y == 22) {
-                    screenBuffer[getScreenIndex(x,y)] = '*';
+        for (int x = gamex; x < 13; x++) {
+            for (int y = gamey; y < 23; y++) {
+                if (x == 1 || y == 1 || x == 12 || y == 22) {
+                    screenBuffer[getScreenIndex(x, y)] = '*';
                 } else {
-                    screenBuffer[getScreenIndex(x,y)] = ' ';
+                    screenBuffer[getScreenIndex(x, y)] = ' ';
                 }
             }
         }
 
         // Draw the blocks
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 20; y++) {
-                char c = blocks[y*10+x];
-                
-                if(c == '.')
-                    c = screenBuffer[getScreenIndex(2+x, 2+y)];
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 20; y++) {
+                char c = blocks[y * 10 + x];
 
-                screenBuffer[getScreenIndex(2+x, 2+y)] = c;
+                if (c == '.') c = screenBuffer[getScreenIndex(2 + x, 2 + y)];
+
+                screenBuffer[getScreenIndex(2 + x, 2 + y)] = c;
             }
         }
 
         // Current tetromino
-        for(int x = 0; x < 4; x++) {
-            for(int y = 0; y < 4;  y++) {
-                char c = tetrominos[currentTetromino][rotate(x, y, currentRotation)];   
-                if(screenBuffer[getScreenIndex(currentx+x+gamex, currenty+y+gamey)] == ' ') {
-                    screenBuffer[getScreenIndex(currentx+x+gamex, currenty+y+gamey)] = c;
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
+                char c =
+                    tetrominos[currentTetromino][rotate(x, y, currentRotation)];
+                if (screenBuffer[getScreenIndex(currentx + x + gamex,
+                                                currenty + y + gamey)] == ' ') {
+                    screenBuffer[getScreenIndex(currentx + x + gamex,
+                                                currenty + y + gamey)] = c;
                 }
             }
         }
@@ -198,10 +202,9 @@ int main() {
         char scoreString[20];
         sprintf(scoreString, "Score: %d", score);
 
-        for(int i = 15; i < strlen(scoreString)+15; i++) {
-            screenBuffer[getScreenIndex(i, 2)] = scoreString[i-15];
+        for (int i = 15; i < strlen(scoreString) + 15; i++) {
+            screenBuffer[getScreenIndex(i, 2)] = scoreString[i - 15];
         }
-
 
         printf("%s\n", screenBuffer);
     }
@@ -210,33 +213,36 @@ int main() {
 
     printf("\e[1;1H\e[2J");  // clear screen
 
-    char gameOverText[100];
+    char gameOverText[200];
+    char scoreText[25];
+
+    sprintf(scoreText, "Score: %d", score);
+
     strcat(gameOverText, "\n\n\n\n\n\n\n\n\n\n");
     strcat(gameOverText, "                                   ");
-    strcat(gameOverText, "Game Over!");
-    strcat(gameOverText, "\n\n\n\n\n\n\n\n\n\n");
+    strcat(gameOverText, "Game Over!\n");
+    strcat(gameOverText, "                                  ");
+    strcat(gameOverText, scoreText);
+    strcat(gameOverText, "\n\n\n\n\n\n\n\n\n");
 
     printf("%s", gameOverText);
-
 
     return 0;
 }
 
-int getScreenIndex(int x, int y) {
-     return y * windowWidth + x;
-}
+int getScreenIndex(int x, int y) { return y * windowWidth + x; }
 
 int rotate(int x, int y, int a) {
     int pi = 0;
-    switch(a%4) {
-        case 0: 
+    switch (a % 4) {
+        case 0:
             pi = y * 4 + x;
             break;
 
         case 1:
             pi = 12 + y - (x * 4);
             break;
-        
+
         case 2:
             pi = 15 - (y * 4) - x;
             break;
@@ -244,7 +250,6 @@ int rotate(int x, int y, int a) {
         case 3:
             pi = 3 - y + (x * 4);
             break;
-        	
     }
 
     return pi;
@@ -252,21 +257,22 @@ int rotate(int x, int y, int a) {
 
 int spaceAvaliable(int tetromino, int px, int py, int a) {
     for (int x = 0; x < 4; x++) {
-        for(int y = 0; y < 4; y++) {
+        for (int y = 0; y < 4; y++) {
             char c = tetrominos[tetromino][rotate(x, y, a)];
 
             int solidPiece = 0;
 
-            if (screenBuffer[getScreenIndex(px+x+gamex, py+y+gamey)] == 'X') {
+            if (screenBuffer[getScreenIndex(px + x + gamex, py + y + gamey)] ==
+                'X') {
                 solidPiece = 1;
-            } else if (screenBuffer[getScreenIndex(px+x+gamex, py+y+gamey)] == '*') {
+            } else if (screenBuffer[getScreenIndex(px + x + gamex,
+                                                   py + y + gamey)] == '*') {
                 solidPiece = 1;
             }
 
-            if(solidPiece && c == 'O') {
+            if (solidPiece && c == 'O') {
                 return 0;
             }
-
         }
     }
 
@@ -274,26 +280,26 @@ int spaceAvaliable(int tetromino, int px, int py, int a) {
 }
 
 int getKey() {
-    if(getch() == '\033') {
+    if (getch() == '\033') {
         getch();
-        switch(getch()) { 
-        case 'A':
-            lastkey = 1;
-            return 1;
-            break;
-        case 'B':
-            lastkey = 2;
-            return 2;
-            break;
-        case 'C':
-            lastkey = 3;        
-            return 3;
-            break;
-        case 'D':
-            lastkey = 4;
-            return 4;
-            break;
-    }
+        switch (getch()) {
+            case 'A':
+                lastkey = 1;
+                return 1;
+                break;
+            case 'B':
+                lastkey = 2;
+                return 2;
+                break;
+            case 'C':
+                lastkey = 3;
+                return 3;
+                break;
+            case 'D':
+                lastkey = 4;
+                return 4;
+                break;
+        }
     }
 
     return 0;
